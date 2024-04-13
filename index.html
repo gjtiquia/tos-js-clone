@@ -4,16 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="./src/style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tower of Saviours Clone</title>
 </head>
 
 <body>
   <div class="bg-slate-800 h-dvh flex flex-col items-center justify-center gap-3 p-4">
+
+    <div class="flex-grow sm:hidden"></div>
     <h1 class="text-white font-bold text-xl sm:text-2xl">Tower of Saviours Clone</h1>
+    <div class="flex-grow sm:hidden"></div>
 
-    <div class="bg-red-500 aspect-square w-full max-w-sm">
-
+    <div class="aspect-square w-full max-w-sm">
+      <canvas id="game-canvas" class="size-full rounded-md"></canvas>
     </div>
   </div>
 
