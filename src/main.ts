@@ -2,10 +2,9 @@ import { gameToCanvasPos, getCanvasAnd2DContext, updateCanvasResolution } from "
 import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
-import { Vector2 } from "./types";
 
-// Debug
-let pos: Vector2 = { x: 0, y: 0 };
+// Game State
+const gems: GemType[][] = [];
 
 // Main
 main();
@@ -26,11 +25,14 @@ async function main() {
     // Eg. Mouse and Touch events which update globals
     subscribeToGlobalEvents();
 
+    // Game Setup
+    initializeGameState();
+
     // Game Loop
     let isGameActive = true;
     while (isGameActive) {
 
-        // Update Game State
+        // Update Game StateS
         updateGameState();
 
         // Render
@@ -41,14 +43,38 @@ async function main() {
     }
 }
 
+type GemType =
+    "Fire" |
+    "Grass" |
+    "Water" |
+    "Light" |
+    "Dark" |
+    "Heart"
+
+function initializeGameState() {
+    gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
+    gems.push(["Grass", "Water", "Light", "Dark", "Heart", "Fire"]);
+    gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
+    gems.push(["Grass", "Water", "Light", "Dark", "Heart", "Fire"]);
+    gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
+}
+
 function updateGameState() {
+    // TODO
+    // if (isTouching() || isMouseDown()) {
+    //     pos.x = getTouchOrMousePos().x - DESIGN_RESOLUTION.x / 4;
+    //     pos.y = getTouchOrMousePos().y - DESIGN_RESOLUTION.y / 4;
+    // }
+}
 
-    const canvas = getCanvas();
-    const ctx = getCtx();
-
-    if (isTouching() || isMouseDown()) {
-        pos.x = getTouchOrMousePos().x - DESIGN_RESOLUTION.x / 4;
-        pos.y = getTouchOrMousePos().y - DESIGN_RESOLUTION.y / 4;
+function getColor(gemType: GemType) {
+    switch (gemType) {
+        case "Fire": return "#ff3504";
+        case "Grass": return "#00ab19";
+        case "Water": return "#35c8fe";
+        case "Light": return "#edb800";
+        case "Dark": return "#ba1fa8";
+        case "Heart": return "#ea327a";
     }
 }
 
@@ -64,8 +90,10 @@ function render() {
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 5; j++) {
 
+            const gemType = gems[j][i];
+
             ctx.beginPath();
-            ctx.fillStyle = "#ff0000";
+            ctx.fillStyle = getColor(gemType);
 
             // Circle
             const unit = DESIGN_RESOLUTION.x / 6;
@@ -83,10 +111,4 @@ function render() {
             ctx.fill()
         }
     }
-
-    ctx.beginPath();
-    ctx.fillStyle = "#0000ff";
-
-    const boxCanvasPos = gameToCanvasPos(pos);
-    ctx.fillRect(boxCanvasPos.x, boxCanvasPos.y, canvas.width / 2, canvas.height / 2);
 }
