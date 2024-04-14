@@ -33,9 +33,11 @@ async function main() {
     subscribeToMouseMoveEvent(canvas);
 
     // Subscribe to document events - Touch
+    // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     subscribeToTouchStartEvent(canvas);
     subscribeToTouchMoveEvent(canvas);
     subscribeToTouchEndEvent(canvas);
+    subscibeToTouchCancelEvent(canvas);
 
     // Game Loop
     let isGameActive = true;
@@ -144,6 +146,8 @@ function subscribeToTouchStartEvent(canvas: HTMLCanvasElement) {
         const relativeX = absoluteX - left;
         const relativeY = absoluteY - top;
 
+        // TODO : Update in respect to design resolution 
+
         touchPos.push({ x: relativeX, y: relativeY });
     }
 }
@@ -172,6 +176,13 @@ function subscribeToTouchMoveEvent(canvas: HTMLCanvasElement) {
 
 function subscribeToTouchEndEvent(_: HTMLCanvasElement) {
     document.ontouchend = (_) => {
+        // Clear the array
+        touchPos.length = 0;
+    }
+}
+
+function subscibeToTouchCancelEvent(_: HTMLCanvasElement) {
+    document.ontouchcancel = (_) => {
         // Clear the array
         touchPos.length = 0;
     }
