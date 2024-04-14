@@ -4,9 +4,6 @@ import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 import { Vector2 } from "./types";
 
-// Globals
-const designResolution: Vector2 = { x: 6000, y: 5000 };
-
 // Debug
 let pos: Vector2 = { x: 0, y: 0 };
 
@@ -50,8 +47,8 @@ function updateGameState() {
     const ctx = getCtx();
 
     if (isTouching() || isMouseDown()) {
-        pos.x = getTouchOrMousePos().x - designResolution.x / 4;
-        pos.y = getTouchOrMousePos().y - designResolution.y / 4;
+        pos.x = getTouchOrMousePos().x - DESIGN_RESOLUTION.x / 4;
+        pos.y = getTouchOrMousePos().y - DESIGN_RESOLUTION.y / 4;
     }
 }
 
