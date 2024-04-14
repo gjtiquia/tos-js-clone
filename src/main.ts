@@ -2,8 +2,12 @@
 const TICK_RATE = 60;
 const DELTA_TIME = 1 / TICK_RATE;
 
+// Types
+type Vector2 = { x: number, y: number }
+
 // Globals
-const mousePos = { x: 0, y: 0 }
+const mousePos: Vector2 = { x: 0, y: 0 }
+const touchPos: Vector2[] = []
 
 // Debug
 let posX = 0;
@@ -25,16 +29,23 @@ async function main() {
     // Can implement in the future tho
     updateCanvasResolution(canvas);
 
-    // Subscribe to document events
+    // Subscribe to document events - Mouse
     subscribeToMouseMoveEvent(canvas);
+
+    // Subscribe to document events - Touch
+    subscribeToTouchStartEvent(canvas);
+    subscribeToTouchMoveEvent(canvas);
+    subscribeToTouchEndEvent(canvas);
 
     // Game Loop
     let isGameActive = true;
     while (isGameActive) {
 
         // Update Game State
-        posX = mousePos.x - canvas.width / 4;
-        posY = mousePos.y - canvas.height / 4;
+        if (isTouching()) {
+            posX = getTouchOrMousePos().x - canvas.width / 4;
+            posY = getTouchOrMousePos().y - canvas.height / 4;
+        }
 
         // Render
         render(canvas, ctx);
@@ -107,10 +118,76 @@ function subscribeToMouseMoveEvent(canvas: HTMLCanvasElement) {
         const relativeX = absoluteX - left;
         const relativeY = absoluteY - top;
 
-        // TODO : Then update in respect to design resolution 
+        // TODO : Update in respect to design resolution 
+
         mousePos.x = relativeX;
         mousePos.y = relativeY;
     }
+}
+
+function subscribeToTouchStartEvent(canvas: HTMLCanvasElement) {
+
+    // For now we only consider single-touch
+
+    document.ontouchstart = (e) => {
+
+        const { top, left, width, height } = getCanvasProperties(canvas);
+
+        // Clear the array
+        touchPos.length = 0;
+
+        const touch = e.changedTouches[0];
+
+        const absoluteX = touch.clientX;
+        const absoluteY = touch.clientY;
+
+        const relativeX = absoluteX - left;
+        const relativeY = absoluteY - top;
+
+        touchPos.push({ x: relativeX, y: relativeY });
+    }
+}
+
+function subscribeToTouchMoveEvent(canvas: HTMLCanvasElement) {
+    document.ontouchmove = (e) => {
+
+        const { top, left, width, height } = getCanvasProperties(canvas);
+
+        // Clear the array
+        touchPos.length = 0;
+
+        const changedTouch = e.changedTouches[0];
+
+        const absoluteX = changedTouch.clientX;
+        const absoluteY = changedTouch.clientY;
+
+        const relativeX = absoluteX - left;
+        const relativeY = absoluteY - top;
+
+        // TODO : Update in respect to design resolution 
+
+        touchPos.push({ x: relativeX, y: relativeY });
+    }
+}
+
+function subscribeToTouchEndEvent(_: HTMLCanvasElement) {
+    document.ontouchend = (_) => {
+        // Clear the array
+        touchPos.length = 0;
+    }
+}
+
+function isTouching() {
+    return touchPos.length > 0;
+}
+
+// TODO : isMousePressed
+
+function getTouchOrMousePos(): Vector2 {
+    if (touchPos.length > 0)
+        return touchPos[0];
+
+    return mousePos;
 }
 
 function sleep(ms: number) {
