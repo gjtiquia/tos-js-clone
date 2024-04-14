@@ -2,6 +2,10 @@ import { getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
 import { DELTA_TIME, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
+import { Vector2 } from "./types";
+
+// Globals
+const designResolution: Vector2 = { x: 1000, y: 1000 };
 
 // Debug
 let posX = 0;
@@ -49,7 +53,31 @@ function render(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw
-    // TODO : use a design resolution, eg. 1080x1080
+
+
+
+    // TODO : use a design resolution, eg. 1000x1000
+
+
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 5; j++) {
+
+            ctx.beginPath();
+            ctx.fillStyle = "#ff0000";
+
+            // Circle
+            ctx.arc(
+                canvas.width / 12 + i * canvas.width / 6,
+                canvas.height / 12 + j * canvas.width / 6,
+                canvas.width / 12 - 5,
+                0, 2 * Math.PI
+            );
+
+            ctx.fill()
+        }
+    }
+
+    ctx.beginPath();
     ctx.fillStyle = "#0000ff";
     ctx.fillRect(posX, posY, canvas.width / 2, canvas.height / 2);
 }
