@@ -1,4 +1,4 @@
-import { getCanvas, setCanvas, setCtx } from "./globals";
+import { DESIGN_RESOLUTION, getCanvas, setCanvas, setCtx } from "./globals";
 import { Vector2 } from "./types";
 
 export function getCanvasAnd2DContext() {
@@ -14,6 +14,7 @@ export function getCanvasAnd2DContext() {
 
     setCanvas(canvas);
     setCtx(ctx);
+
     return {};
 }
 
@@ -42,14 +43,47 @@ export function getCanvasProperties() {
     return { top, left, width, height };
 }
 
-export function getRelativePos(absoluteX: number, absoluteY: number): Vector2 {
+export function absoluteToGamePos(absolutePos: Vector2): Vector2 {
+    const canvasPos = absoluteToCanvasPos(absolutePos)
+    return canvasToGamePos(canvasPos);
+}
 
+export function absoluteToCanvasPos(absolutePos: Vector2): Vector2 {
     const { top, left, width, height } = getCanvasProperties();
 
-    const relativeX = absoluteX - left;
-    const relativeY = absoluteY - top;
+    const x = absolutePos.x - left;
+    const y = absolutePos.y - top;
 
-    // TODO : Update in respect to design resolution 
+    return { x, y };
+}
 
-    return { x: relativeX, y: relativeY };
+export function gameToCanvasPos(gamePos: Vector2): Vector2 {
+
+    const canvas = getCanvas();
+    const canvasResolution: Vector2 = { x: canvas.width, y: canvas.height };
+
+    return _gameToCanvasPos(canvasResolution, DESIGN_RESOLUTION, gamePos);
+}
+
+export function _gameToCanvasPos(canvasResolution: Vector2, designResolution: Vector2, gamePos: Vector2): Vector2 {
+
+    const x = gamePos.x * (canvasResolution.x / designResolution.x);
+    const y = gamePos.y * (canvasResolution.y / designResolution.y);
+
+    return { x, y };
+}
+
+export function canvasToGamePos(canvasPos: Vector2): Vector2 {
+    const canvas = getCanvas();
+    const canvasResolution: Vector2 = { x: canvas.width, y: canvas.height };
+
+    return _canvasToGamePos(canvasResolution, DESIGN_RESOLUTION, canvasPos);
+}
+
+export function _canvasToGamePos(canvasResolution: Vector2, designResolution: Vector2, canvasPos: Vector2): Vector2 {
+
+    const x = canvasPos.x * (designResolution.x / canvasResolution.x);
+    const y = canvasPos.y * (designResolution.y / canvasResolution.y);
+
+    return { x, y };
 }

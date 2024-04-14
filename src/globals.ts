@@ -11,6 +11,7 @@ export const getCtx = () => _ctx as CanvasRenderingContext2D;
 // Game Properties
 export const TICK_RATE = 60;
 export const DELTA_TIME = 1 / TICK_RATE;
+export const DESIGN_RESOLUTION: Vector2 = { x: 6000, y: 5000 };
 
 // Mouse
 let _isMouseDown = false;

@@ -1,4 +1,4 @@
-import { getCanvasProperties, getRelativePos } from "./canvasUtils";
+import { getCanvasProperties, absoluteToGamePos } from "./canvasUtils";
 import { mousePos, setMouseDown, touchPos } from "./globals";
 
 export function subscribeToGlobalEvents() {
@@ -15,6 +15,7 @@ export function subscribeToGlobalEvents() {
     subscribeToTouchEndEvent();
     subscibeToTouchCancelEvent();
 }
+
 function subscribeToMouseDownEvent() {
     document.onmousedown = (e) => {
         setMouseDown(true);
@@ -22,12 +23,13 @@ function subscribeToMouseDownEvent() {
         const absoluteX = e.clientX;
         const absoluteY = e.clientY;
 
-        const { x, y } = getRelativePos(absoluteX, absoluteY);
+        const { x, y } = absoluteToGamePos({ x: absoluteX, y: absoluteY });
 
         mousePos.x = x;
         mousePos.y = y;
     };
 }
+
 function subscribeToMouseMoveEvent() {
     document.onmousemove = (e) => {
 
@@ -36,17 +38,19 @@ function subscribeToMouseMoveEvent() {
         const absoluteX = e.clientX;
         const absoluteY = e.clientY;
 
-        const { x, y } = getRelativePos(absoluteX, absoluteY);
+        const { x, y } = absoluteToGamePos({ x: absoluteX, y: absoluteY });
 
         mousePos.x = x;
         mousePos.y = y;
     };
 }
+
 function subscribeToMouseUpEvent() {
     document.onmouseup = (_) => {
         setMouseDown(false);
     };
 }
+
 function subscribeToTouchStartEvent() {
 
     // For now we only consider single-touch
@@ -62,11 +66,12 @@ function subscribeToTouchStartEvent() {
         const absoluteX = changedTouch.clientX;
         const absoluteY = changedTouch.clientY;
 
-        const relativePos = getRelativePos(absoluteX, absoluteY);
+        const relativePos = absoluteToGamePos({ x: absoluteX, y: absoluteY });
 
         touchPos.push(relativePos);
     };
 }
+
 function subscribeToTouchMoveEvent() {
 
     // For now we only consider single-touch
@@ -82,17 +87,19 @@ function subscribeToTouchMoveEvent() {
         const absoluteX = changedTouch.clientX;
         const absoluteY = changedTouch.clientY;
 
-        const relativePos = getRelativePos(absoluteX, absoluteY);
+        const relativePos = absoluteToGamePos({ x: absoluteX, y: absoluteY });
 
         touchPos.push(relativePos);
     };
 }
+
 function subscribeToTouchEndEvent() {
     document.ontouchend = (_) => {
         // Clear the array
         touchPos.length = 0;
     };
 }
+
 function subscibeToTouchCancelEvent() {
     document.ontouchcancel = (_) => {
         // Clear the array

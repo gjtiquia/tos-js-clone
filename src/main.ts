@@ -1,5 +1,5 @@
-import { getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
-import { DELTA_TIME, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
+import { gameToCanvasPos, getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
+import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 import { Vector2 } from "./types";
@@ -8,8 +8,7 @@ import { Vector2 } from "./types";
 const designResolution: Vector2 = { x: 6000, y: 5000 };
 
 // Debug
-let posX = 0;
-let posY = 0;
+let pos: Vector2 = { x: 0, y: 0 };
 
 // Main
 main();
@@ -51,8 +50,8 @@ function updateGameState() {
     const ctx = getCtx();
 
     if (isTouching() || isMouseDown()) {
-        posX = getTouchOrMousePos().x - canvas.width / 4;
-        posY = getTouchOrMousePos().y - canvas.height / 4;
+        pos.x = getTouchOrMousePos().x - designResolution.x / 4;
+        pos.y = getTouchOrMousePos().y - designResolution.y / 4;
     }
 }
 
@@ -65,30 +64,32 @@ function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw
-
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 5; j++) {
 
             ctx.beginPath();
             ctx.fillStyle = "#ff0000";
 
-            // TODO : use a design resolution, eg. 1000x1000
-
             // Circle
-            ctx.arc(
-                canvas.width / 12 + i * canvas.width / 6,
-                canvas.height / 12 + j * canvas.width / 6 + 5,
-                canvas.width / 12 - 5,
-                0, 2 * Math.PI
-            );
+            const unit = DESIGN_RESOLUTION.x / 6;
 
+            const padding = unit / 10;
+            const radius = unit / 2 - padding / 2;
+
+            const x = unit / 2 + i * unit;
+            const y = unit / 2 + j * unit;
+
+            const canvasPos = gameToCanvasPos({ x, y });
+            const canvasRadius = gameToCanvasPos({ x: radius, y: radius }).x;
+
+            ctx.arc(canvasPos.x, canvasPos.y, canvasRadius, 0, 2 * Math.PI);
             ctx.fill()
         }
     }
 
-    // TODO : use a design resolution, eg. 1000x1000
-
     ctx.beginPath();
     ctx.fillStyle = "#0000ff";
-    ctx.fillRect(posX, posY, canvas.width / 2, canvas.height / 2);
+
+    const boxCanvasPos = gameToCanvasPos(pos);
+    ctx.fillRect(boxCanvasPos.x, boxCanvasPos.y, canvas.width / 2, canvas.height / 2);
 }
