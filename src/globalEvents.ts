@@ -1,34 +1,34 @@
 import { getCanvasProperties, getRelativePos } from "./canvasUtils";
 import { mousePos, setMouseDown, touchPos } from "./globals";
 
-export function subscribeToGlobalEvents(canvas: HTMLCanvasElement) {
+export function subscribeToGlobalEvents() {
     // Subscribe to document events - Mouse
     // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
-    subscribeToMouseDownEvent(canvas);
-    subscribeToMouseMoveEvent(canvas);
-    subscribeToMouseUpEvent(canvas);
+    subscribeToMouseDownEvent();
+    subscribeToMouseMoveEvent();
+    subscribeToMouseUpEvent();
 
     // Subscribe to document events - Touch
     // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
-    subscribeToTouchStartEvent(canvas);
-    subscribeToTouchMoveEvent(canvas);
-    subscribeToTouchEndEvent(canvas);
-    subscibeToTouchCancelEvent(canvas);
+    subscribeToTouchStartEvent();
+    subscribeToTouchMoveEvent();
+    subscribeToTouchEndEvent();
+    subscibeToTouchCancelEvent();
 }
-function subscribeToMouseDownEvent(canvas: HTMLCanvasElement) {
+function subscribeToMouseDownEvent() {
     document.onmousedown = (e) => {
         setMouseDown(true);
 
         const absoluteX = e.clientX;
         const absoluteY = e.clientY;
 
-        const { x, y } = getRelativePos(canvas, absoluteX, absoluteY);
+        const { x, y } = getRelativePos(absoluteX, absoluteY);
 
         mousePos.x = x;
         mousePos.y = y;
     };
 }
-function subscribeToMouseMoveEvent(canvas: HTMLCanvasElement) {
+function subscribeToMouseMoveEvent() {
     document.onmousemove = (e) => {
 
         // There is a difference between e.clientX, e.screenX and e.pageX
@@ -36,23 +36,23 @@ function subscribeToMouseMoveEvent(canvas: HTMLCanvasElement) {
         const absoluteX = e.clientX;
         const absoluteY = e.clientY;
 
-        const { x, y } = getRelativePos(canvas, absoluteX, absoluteY);
+        const { x, y } = getRelativePos(absoluteX, absoluteY);
 
         mousePos.x = x;
         mousePos.y = y;
     };
 }
-function subscribeToMouseUpEvent(_: HTMLCanvasElement) {
+function subscribeToMouseUpEvent() {
     document.onmouseup = (_) => {
         setMouseDown(false);
     };
 }
-function subscribeToTouchStartEvent(canvas: HTMLCanvasElement) {
+function subscribeToTouchStartEvent() {
 
     // For now we only consider single-touch
     document.ontouchstart = (e) => {
 
-        const { top, left, width, height } = getCanvasProperties(canvas);
+        const { top, left, width, height } = getCanvasProperties();
 
         // Clear the array
         touchPos.length = 0;
@@ -62,17 +62,17 @@ function subscribeToTouchStartEvent(canvas: HTMLCanvasElement) {
         const absoluteX = changedTouch.clientX;
         const absoluteY = changedTouch.clientY;
 
-        const relativePos = getRelativePos(canvas, absoluteX, absoluteY);
+        const relativePos = getRelativePos(absoluteX, absoluteY);
 
         touchPos.push(relativePos);
     };
 }
-function subscribeToTouchMoveEvent(canvas: HTMLCanvasElement) {
+function subscribeToTouchMoveEvent() {
 
     // For now we only consider single-touch
     document.ontouchmove = (e) => {
 
-        const { top, left, width, height } = getCanvasProperties(canvas);
+        const { top, left, width, height } = getCanvasProperties();
 
         // Clear the array
         touchPos.length = 0;
@@ -82,18 +82,18 @@ function subscribeToTouchMoveEvent(canvas: HTMLCanvasElement) {
         const absoluteX = changedTouch.clientX;
         const absoluteY = changedTouch.clientY;
 
-        const relativePos = getRelativePos(canvas, absoluteX, absoluteY);
+        const relativePos = getRelativePos(absoluteX, absoluteY);
 
         touchPos.push(relativePos);
     };
 }
-function subscribeToTouchEndEvent(_: HTMLCanvasElement) {
+function subscribeToTouchEndEvent() {
     document.ontouchend = (_) => {
         // Clear the array
         touchPos.length = 0;
     };
 }
-function subscibeToTouchCancelEvent(_: HTMLCanvasElement) {
+function subscibeToTouchCancelEvent() {
     document.ontouchcancel = (_) => {
         // Clear the array
         touchPos.length = 0;

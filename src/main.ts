@@ -1,5 +1,5 @@
 import { getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
-import { DELTA_TIME, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
+import { DELTA_TIME, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 import { Vector2 } from "./types";
@@ -15,7 +15,7 @@ let posY = 0;
 main();
 
 async function main() {
-    const { canvas, ctx, error } = getCanvasAnd2DContext()
+    const { error } = getCanvasAnd2DContext()
     if (error) {
         console.error(error);
         return;
@@ -25,45 +25,54 @@ async function main() {
     // But mobile window does not... resize often anyways
     // On desktop is not noticable easily anyways too
     // Can implement in the future tho
-    updateCanvasResolution(canvas);
+    updateCanvasResolution();
 
     // Eg. Mouse and Touch events which update globals
-    subscribeToGlobalEvents(canvas);
+    subscribeToGlobalEvents();
 
     // Game Loop
     let isGameActive = true;
     while (isGameActive) {
 
         // Update Game State
-        if (isTouching() || isMouseDown()) {
-            posX = getTouchOrMousePos().x - canvas.width / 4;
-            posY = getTouchOrMousePos().y - canvas.height / 4;
-        }
+        updateGameState();
 
         // Render
-        render(canvas, ctx);
+        render();
 
         // DeltaTime
         await sleep(DELTA_TIME * 1000);
     }
 }
 
-function render(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+function updateGameState() {
+
+    const canvas = getCanvas();
+    const ctx = getCtx();
+
+    if (isTouching() || isMouseDown()) {
+        posX = getTouchOrMousePos().x - canvas.width / 4;
+        posY = getTouchOrMousePos().y - canvas.height / 4;
+    }
+}
+
+function render() {
+
+    const canvas = getCanvas();
+    const ctx = getCtx();
+
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw
-
-
-
-    // TODO : use a design resolution, eg. 1000x1000
-
 
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 5; j++) {
 
             ctx.beginPath();
             ctx.fillStyle = "#ff0000";
+
+            // TODO : use a design resolution, eg. 1000x1000
 
             // Circle
             ctx.arc(
@@ -76,6 +85,8 @@ function render(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
             ctx.fill()
         }
     }
+
+    // TODO : use a design resolution, eg. 1000x1000
 
     ctx.beginPath();
     ctx.fillStyle = "#0000ff";
