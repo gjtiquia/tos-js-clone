@@ -6,7 +6,9 @@ const DELTA_TIME = 1 / TICK_RATE;
 type Vector2 = { x: number, y: number }
 
 // Globals
+let mousedown = false;
 const mousePos: Vector2 = { x: 0, y: 0 }
+
 const touchPos: Vector2[] = []
 
 // Debug
@@ -30,7 +32,10 @@ async function main() {
     updateCanvasResolution(canvas);
 
     // Subscribe to document events - Mouse
+    // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+    subscribeToMouseDownEvent(canvas);
     subscribeToMouseMoveEvent(canvas);
+    subscribeToMouseUpEvent(canvas);
 
     // Subscribe to document events - Touch
     // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
@@ -44,7 +49,7 @@ async function main() {
     while (isGameActive) {
 
         // Update Game State
-        if (isTouching()) {
+        if (isTouching() || isMouseDown()) {
             posX = getTouchOrMousePos().x - canvas.width / 4;
             posY = getTouchOrMousePos().y - canvas.height / 4;
         }
@@ -104,33 +109,44 @@ function getCanvasProperties(canvas: HTMLCanvasElement) {
     return { top, left, width, height };
 }
 
-function subscribeToMouseMoveEvent(canvas: HTMLCanvasElement) {
+function subscribeToMouseDownEvent(canvas: HTMLCanvasElement) {
+    document.onmousedown = (e) => {
+        mousedown = true;
 
-    // TODO : This... does not account for touch on mobile yet
-    // TODO : See this for reference: https://dustinpfister.github.io/2020/03/04/canvas-get-point-relative-to-canvas/
-
-    document.onmousemove = (e) => {
-
-        // There is a difference between e.clientX, e.screenX and e.pageX
         const absoluteX = e.clientX;
         const absoluteY = e.clientY;
 
-        const { top, left, width, height } = getCanvasProperties(canvas);
+        const { x, y } = getRelativePos(canvas, absoluteX, absoluteY);
 
-        const relativeX = absoluteX - left;
-        const relativeY = absoluteY - top;
+        mousePos.x = x;
+        mousePos.y = y;
+    }
+}
 
-        // TODO : Update in respect to design resolution 
+function subscribeToMouseMoveEvent(canvas: HTMLCanvasElement) {
+    document.onmousemove = (e) => {
 
-        mousePos.x = relativeX;
-        mousePos.y = relativeY;
+        // There is a difference between e.clientX, e.screenX and e.pageX
+        // Use clientX for viewport coordinates
+        const absoluteX = e.clientX;
+        const absoluteY = e.clientY;
+
+        const { x, y } = getRelativePos(canvas, absoluteX, absoluteY);
+
+        mousePos.x = x;
+        mousePos.y = y;
+    }
+}
+
+function subscribeToMouseUpEvent(_: HTMLCanvasElement) {
+    document.onmouseup = (_) => {
+        mousedown = false;
     }
 }
 
 function subscribeToTouchStartEvent(canvas: HTMLCanvasElement) {
 
     // For now we only consider single-touch
-
     document.ontouchstart = (e) => {
 
         const { top, left, width, height } = getCanvasProperties(canvas);
@@ -138,21 +154,20 @@ function subscribeToTouchStartEvent(canvas: HTMLCanvasElement) {
         // Clear the array
         touchPos.length = 0;
 
-        const touch = e.changedTouches[0];
+        const changedTouch = e.changedTouches[0];
 
-        const absoluteX = touch.clientX;
-        const absoluteY = touch.clientY;
+        const absoluteX = changedTouch.clientX;
+        const absoluteY = changedTouch.clientY;
 
-        const relativeX = absoluteX - left;
-        const relativeY = absoluteY - top;
+        const relativePos = getRelativePos(canvas, absoluteX, absoluteY);
 
-        // TODO : Update in respect to design resolution 
-
-        touchPos.push({ x: relativeX, y: relativeY });
+        touchPos.push(relativePos);
     }
 }
 
 function subscribeToTouchMoveEvent(canvas: HTMLCanvasElement) {
+
+    // For now we only consider single-touch
     document.ontouchmove = (e) => {
 
         const { top, left, width, height } = getCanvasProperties(canvas);
@@ -165,12 +180,9 @@ function subscribeToTouchMoveEvent(canvas: HTMLCanvasElement) {
         const absoluteX = changedTouch.clientX;
         const absoluteY = changedTouch.clientY;
 
-        const relativeX = absoluteX - left;
-        const relativeY = absoluteY - top;
+        const relativePos = getRelativePos(canvas, absoluteX, absoluteY);
 
-        // TODO : Update in respect to design resolution 
-
-        touchPos.push({ x: relativeX, y: relativeY });
+        touchPos.push(relativePos);
     }
 }
 
@@ -192,13 +204,26 @@ function isTouching() {
     return touchPos.length > 0;
 }
 
-// TODO : isMousePressed
+function isMouseDown() {
+    return mousedown;
+}
 
 function getTouchOrMousePos(): Vector2 {
     if (touchPos.length > 0)
         return touchPos[0];
 
     return mousePos;
+}
+
+function getRelativePos(canvas: HTMLCanvasElement, absoluteX: number, absoluteY: number): Vector2 {
+    const { top, left, width, height } = getCanvasProperties(canvas);
+
+    const relativeX = absoluteX - left;
+    const relativeY = absoluteY - top;
+
+    // TODO : Update in respect to design resolution 
+
+    return { x: relativeX, y: relativeY };
 }
 
 function sleep(ms: number) {
