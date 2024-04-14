@@ -5,7 +5,7 @@ import { sleep } from "./utils";
 import { Vector2 } from "./types";
 
 // Globals
-const designResolution: Vector2 = { x: 1000, y: 1000 };
+const designResolution: Vector2 = { x: 6000, y: 5000 };
 
 // Debug
 let posX = 0;
@@ -68,7 +68,7 @@ function render(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
             // Circle
             ctx.arc(
                 canvas.width / 12 + i * canvas.width / 6,
-                canvas.height / 12 + j * canvas.width / 6,
+                canvas.height / 12 + j * canvas.width / 6 + 5,
                 canvas.width / 12 - 5,
                 0, 2 * Math.PI
             );
