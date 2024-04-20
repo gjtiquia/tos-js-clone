@@ -3,6 +3,19 @@ import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, i
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 
+// Input State
+type InputState = {
+    isPressed: boolean
+}
+
+const previousInputState: InputState = {
+    isPressed: false,
+}
+
+const currentInputState: InputState = {
+    isPressed: false,
+}
+
 // Game State
 const gems: GemType[][] = [];
 
@@ -60,11 +73,45 @@ function initializeGameState() {
 }
 
 function updateGameState() {
-    // TODO
-    // if (isTouching() || isMouseDown()) {
-    //     pos.x = getTouchOrMousePos().x - DESIGN_RESOLUTION.x / 4;
-    //     pos.y = getTouchOrMousePos().y - DESIGN_RESOLUTION.y / 4;
-    // }
+
+    // Input Polling
+    updateInputState(currentInputState);
+
+    if (isPressedDown(previousInputState, currentInputState))
+        console.log("Pressed Down")
+
+    if (isPressedUp(previousInputState, currentInputState))
+        console.log("Pressed Up")
+
+    // Save current input as previous input for next tick
+    copyInputState(currentInputState, previousInputState);
+}
+
+
+// TODO : Refactor 
+
+function updateInputState(inputState: InputState) {
+    resetInputState(inputState);
+
+    if (isTouching() || isMouseDown()) {
+        inputState.isPressed = true;
+    }
+}
+
+function resetInputState(inputState: InputState) {
+    inputState.isPressed = false;
+}
+
+function copyInputState(from: InputState, to: InputState) {
+    to.isPressed = from.isPressed;
+}
+
+function isPressedDown(previous: InputState, current: InputState) {
+    return previous.isPressed === false && current.isPressed === true;
+}
+
+function isPressedUp(previous: InputState, current: InputState) {
+    return previous.isPressed === true && current.isPressed === false;
 }
 
 function getColor(gemType: GemType) {
