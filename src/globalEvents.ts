@@ -73,6 +73,7 @@ function subscribeToTouchStartEvent() {
     },
         // Allows e.preventDefault() on touch events
         // as touch events are passive events, which by default disallow e.preventDefault()
+        //! Note that this disables all browser touch features (eg. scrolling, refresh, hold and copy text etc.)
         { passive: false }
     );
 }
@@ -99,6 +100,7 @@ function subscribeToTouchMoveEvent() {
     },
         // Allows e.preventDefault() on touch events
         // as touch events are passive events, which by default disallow e.preventDefault()
+        //! Note that this disables all browser touch features (eg. scrolling, refresh, hold and copy text etc.)
         { passive: false }
     );
 }
