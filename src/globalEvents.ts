@@ -1,4 +1,4 @@
-import { getCanvasProperties, absoluteToGamePos } from "./canvasUtils";
+import { absoluteToGamePos } from "./canvasUtils";
 import { mousePos, setMouseDown, touchPos } from "./globals";
 
 export function subscribeToGlobalEvents() {
@@ -54,9 +54,10 @@ function subscribeToMouseUpEvent() {
 function subscribeToTouchStartEvent() {
 
     // For now we only consider single-touch
-    document.ontouchstart = (e) => {
+    document.addEventListener("touchstart", (e) => {
 
-        const { top, left, width, height } = getCanvasProperties();
+        // Prevent Scrolling
+        e.preventDefault();
 
         // Clear the array
         touchPos.length = 0;
@@ -69,15 +70,20 @@ function subscribeToTouchStartEvent() {
         const relativePos = absoluteToGamePos({ x: absoluteX, y: absoluteY });
 
         touchPos.push(relativePos);
-    };
+    },
+        // Allows e.preventDefault() on touch events
+        // as touch events are passive events, which by default disallow e.preventDefault()
+        { passive: false }
+    );
 }
 
 function subscribeToTouchMoveEvent() {
 
     // For now we only consider single-touch
-    document.ontouchmove = (e) => {
+    document.addEventListener("touchmove", (e) => {
 
-        const { top, left, width, height } = getCanvasProperties();
+        // Prevent Scrolling
+        e.preventDefault();
 
         // Clear the array
         touchPos.length = 0;
@@ -90,7 +96,11 @@ function subscribeToTouchMoveEvent() {
         const relativePos = absoluteToGamePos({ x: absoluteX, y: absoluteY });
 
         touchPos.push(relativePos);
-    };
+    },
+        // Allows e.preventDefault() on touch events
+        // as touch events are passive events, which by default disallow e.preventDefault()
+        { passive: false }
+    );
 }
 
 function subscribeToTouchEndEvent() {

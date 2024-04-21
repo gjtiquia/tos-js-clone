@@ -1,6 +1,11 @@
 import { DESIGN_RESOLUTION, getCanvas, setCanvas, setCtx } from "./globals";
 import { Vector2 } from "./types";
 
+// Hack to upscale canvas in mobile
+// Because the window.innerWidth is... not really equal to the device resolution
+// This number for now is arbitrary
+const UPSCALE_FACTOR = 10;
+
 export function getCanvasAnd2DContext() {
     const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
     if (!canvas) {

@@ -1,7 +1,8 @@
 import { gameToCanvasPos, getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
-import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching } from "./globals";
+import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching, mousePos } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
+import { Vector2 } from "./types";
 
 // Input State
 type InputState = {
@@ -17,6 +18,7 @@ const currentInputState: InputState = {
 }
 
 // Game State
+let isDraggingGem = false;
 const gems: GemType[][] = [];
 
 // Main
@@ -77,11 +79,15 @@ function updateGameState() {
     // Input Polling
     updateInputState(currentInputState);
 
-    if (isPressedDown(previousInputState, currentInputState))
+    if (isPressedDown(previousInputState, currentInputState)) {
         console.log("Pressed Down")
+        isDraggingGem = true;
+    }
 
-    if (isPressedUp(previousInputState, currentInputState))
+    if (isPressedUp(previousInputState, currentInputState)) {
         console.log("Pressed Up")
+        isDraggingGem = false;
+    }
 
     // Save current input as previous input for next tick
     copyInputState(currentInputState, previousInputState);
@@ -134,28 +140,40 @@ function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw
+    const gemSizeUnit = DESIGN_RESOLUTION.x / 6;
+
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 5; j++) {
 
             const gemType = gems[j][i];
 
-            ctx.beginPath();
-            ctx.fillStyle = getColor(gemType);
+            const x = gemSizeUnit / 2 + i * gemSizeUnit;
+            const y = gemSizeUnit / 2 + j * gemSizeUnit;
+            const gamePos = { x, y };
 
-            // Circle
-            const unit = DESIGN_RESOLUTION.x / 6;
-
-            const padding = unit / 10;
-            const radius = unit / 2 - padding / 2;
-
-            const x = unit / 2 + i * unit;
-            const y = unit / 2 + j * unit;
-
-            const canvasPos = gameToCanvasPos({ x, y });
-            const canvasRadius = gameToCanvasPos({ x: radius, y: radius }).x;
-
-            ctx.arc(canvasPos.x, canvasPos.y, canvasRadius, 0, 2 * Math.PI);
-            ctx.fill()
+            drawGem(gemType, gemSizeUnit, gamePos)
         }
     }
+
+    if (isDraggingGem) {
+        drawGem("Fire", gemSizeUnit, getTouchOrMousePos());
+    }
+}
+
+function drawGem(gemType: GemType, sizeUnit: number, gamePos: Vector2) {
+
+    const ctx = getCtx();
+
+    ctx.beginPath();
+    ctx.fillStyle = getColor(gemType);
+
+    // Circle
+    const padding = sizeUnit / 10;
+    const radius = sizeUnit / 2 - padding / 2;
+
+    const canvasPos = gameToCanvasPos(gamePos);
+    const canvasRadius = gameToCanvasPos({ x: radius, y: radius }).x;
+
+    ctx.arc(canvasPos.x, canvasPos.y, canvasRadius, 0, 2 * Math.PI);
+    ctx.fill()
 }
