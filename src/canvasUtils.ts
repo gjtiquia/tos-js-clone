@@ -4,7 +4,14 @@ import { Vector2 } from "./types";
 // Hack to upscale canvas in mobile
 // Because the window.innerWidth is... not really equal to the device resolution
 // This number for now is arbitrary
-const UPSCALE_FACTOR = 10;
+// x1.25 already has significant diffence from x1
+// x10 works as well
+// x100 crashes the canvas
+// x2 is chosen for now, for "good-enough" sharpness while not having too much performance drain
+/**
+ * Scaling factor from canvas size to canvas resolution.
+ */
+const UPSCALE_FACTOR = 2;
 
 export function getCanvasAnd2DContext() {
     const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
@@ -38,12 +45,12 @@ export function getCanvasProperties() {
     const canvas = getCanvas();
 
     const boundingRect = canvas.getBoundingClientRect();
-    const top = boundingRect.top;
-    const left = boundingRect.left;
+    const top = boundingRect.top * UPSCALE_FACTOR;
+    const left = boundingRect.left * UPSCALE_FACTOR;
 
     const cs = getComputedStyle(canvas);
-    const width = parseInt(cs.getPropertyValue('width'), 10);
-    const height = parseInt(cs.getPropertyValue('height'), 10);
+    const width = parseInt(cs.getPropertyValue('width'), 10) * UPSCALE_FACTOR;
+    const height = parseInt(cs.getPropertyValue('height'), 10) * UPSCALE_FACTOR;
 
     return { top, left, width, height };
 }
@@ -54,10 +61,13 @@ export function absoluteToGamePos(absolutePos: Vector2): Vector2 {
 }
 
 export function absoluteToCanvasPos(absolutePos: Vector2): Vector2 {
-    const { top, left, width, height } = getCanvasProperties();
+    const { top, left } = getCanvasProperties();
 
-    const x = absolutePos.x - left;
-    const y = absolutePos.y - top;
+    // top/left is already upscaled
+    // absolutePos is NOT upscaled
+    // need to first "normalize" top/left => subtract => upscale again
+    const x = (absolutePos.x - left / UPSCALE_FACTOR) * UPSCALE_FACTOR;
+    const y = (absolutePos.y - top / UPSCALE_FACTOR) * UPSCALE_FACTOR;
 
     return { x, y };
 }
