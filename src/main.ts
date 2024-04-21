@@ -1,21 +1,9 @@
 import { gameToCanvasPos, getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
-import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, isMouseDown, isTouching, mousePos } from "./globals";
+import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, mousePos } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 import { Vector2 } from "./types";
-
-// Input State
-type InputState = {
-    isPressed: boolean
-}
-
-const previousInputState: InputState = {
-    isPressed: false,
-}
-
-const currentInputState: InputState = {
-    isPressed: false,
-}
+import { updateCurrentInputState, isPressedDown, isPressedUp, copyCurrentInputStateToPrevious } from "./inputState";
 
 // Game State
 let isDraggingGem = false;
@@ -77,47 +65,20 @@ function initializeGameState() {
 function updateGameState() {
 
     // Input Polling
-    updateInputState(currentInputState);
+    updateCurrentInputState();
 
-    if (isPressedDown(previousInputState, currentInputState)) {
+    if (isPressedDown()) {
         console.log("Pressed Down")
         isDraggingGem = true;
     }
 
-    if (isPressedUp(previousInputState, currentInputState)) {
+    if (isPressedUp()) {
         console.log("Pressed Up")
         isDraggingGem = false;
     }
 
-    // Save current input as previous input for next tick
-    copyInputState(currentInputState, previousInputState);
-}
-
-
-// TODO : Refactor 
-
-function updateInputState(inputState: InputState) {
-    resetInputState(inputState);
-
-    if (isTouching() || isMouseDown()) {
-        inputState.isPressed = true;
-    }
-}
-
-function resetInputState(inputState: InputState) {
-    inputState.isPressed = false;
-}
-
-function copyInputState(from: InputState, to: InputState) {
-    to.isPressed = from.isPressed;
-}
-
-function isPressedDown(previous: InputState, current: InputState) {
-    return previous.isPressed === false && current.isPressed === true;
-}
-
-function isPressedUp(previous: InputState, current: InputState) {
-    return previous.isPressed === true && current.isPressed === false;
+    // Saves current input as previous input for next tick
+    copyCurrentInputStateToPrevious();
 }
 
 function getColor(gemType: GemType) {
