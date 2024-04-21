@@ -1,9 +1,18 @@
 import { gameToCanvasPos, getCanvasAnd2DContext, updateCanvasResolution } from "./canvasUtils";
-import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos, mousePos } from "./globals";
+import { DELTA_TIME, DESIGN_RESOLUTION, getCanvas, getCtx, getTouchOrMousePos } from "./globals";
 import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 import { Vector2 } from "./types";
 import { updateCurrentInputState, isPressedDown, isPressedUp, copyCurrentInputStateToPrevious } from "./inputState";
+
+// Types
+type GemType =
+    "Fire" |
+    "Grass" |
+    "Water" |
+    "Light" |
+    "Dark" |
+    "Heart"
 
 // Game State
 let isDraggingGem = false;
@@ -46,14 +55,6 @@ async function main() {
     }
 }
 
-type GemType =
-    "Fire" |
-    "Grass" |
-    "Water" |
-    "Light" |
-    "Dark" |
-    "Heart"
-
 function initializeGameState() {
     gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
     gems.push(["Grass", "Water", "Light", "Dark", "Heart", "Fire"]);
@@ -68,28 +69,19 @@ function updateGameState() {
     updateCurrentInputState();
 
     if (isPressedDown()) {
-        console.log("Pressed Down")
         isDraggingGem = true;
+
+        console.log("Pressed Down", "pos:", getTouchOrMousePos())
     }
 
     if (isPressedUp()) {
-        console.log("Pressed Up")
         isDraggingGem = false;
+
+        console.log("Pressed Up")
     }
 
     // Saves current input as previous input for next tick
     copyCurrentInputStateToPrevious();
-}
-
-function getColor(gemType: GemType) {
-    switch (gemType) {
-        case "Fire": return "#ff3504";
-        case "Grass": return "#00ab19";
-        case "Water": return "#35c8fe";
-        case "Light": return "#edb800";
-        case "Dark": return "#ba1fa8";
-        case "Heart": return "#ea327a";
-    }
 }
 
 function render() {
@@ -110,9 +102,9 @@ function render() {
 
             const x = gemSizeUnit / 2 + i * gemSizeUnit;
             const y = gemSizeUnit / 2 + j * gemSizeUnit;
-            const gamePos = { x, y };
+            const pos = { x, y };
 
-            drawGem(gemType, gemSizeUnit, gamePos)
+            drawGem(gemType, gemSizeUnit, pos)
         }
     }
 
@@ -137,4 +129,15 @@ function drawGem(gemType: GemType, sizeUnit: number, gamePos: Vector2) {
 
     ctx.arc(canvasPos.x, canvasPos.y, canvasRadius, 0, 2 * Math.PI);
     ctx.fill()
+}
+
+function getColor(gemType: GemType) {
+    switch (gemType) {
+        case "Fire": return "#ff3504";
+        case "Grass": return "#00ab19";
+        case "Water": return "#35c8fe";
+        case "Light": return "#edb800";
+        case "Dark": return "#ba1fa8";
+        case "Heart": return "#ea327a";
+    }
 }
