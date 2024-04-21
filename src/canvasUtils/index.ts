@@ -1,5 +1,5 @@
-import { DESIGN_RESOLUTION, getCanvas, setCanvas, setCtx } from "./globals";
-import { Vector2 } from "./types";
+import { DESIGN_RESOLUTION, getCanvas, setCanvas, setCtx } from "../globals";
+import { Vector2 } from "../types";
 
 // Hack to upscale canvas in mobile
 // Because the window.innerWidth is... not really equal to the device resolution

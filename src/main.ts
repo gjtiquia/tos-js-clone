@@ -4,6 +4,7 @@ import { subscribeToGlobalEvents } from "./globalEvents";
 import { sleep } from "./utils";
 import { Vector2 } from "./types";
 import { updateCurrentInputState, isPressedDown, isPressedUp, copyCurrentInputStateToPrevious } from "./inputState";
+import { gameToGemPos } from "./gemUtils";
 
 // Types
 type GemType =
@@ -15,7 +16,11 @@ type GemType =
     "Heart"
 
 // Game State
-let isDraggingGem = false;
+const dragState = {
+    isActive: false,
+    initialGemType: "Fire" as GemType,
+    currentGemPos: { x: -1, y: -1 } as Vector2,
+}
 const gems: GemType[][] = [];
 
 // Main
@@ -63,25 +68,46 @@ function initializeGameState() {
     gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
 }
 
+function getGem(gemPos: Vector2) {
+    return gems[gemPos.y][gemPos.x];
+}
+
 function updateGameState() {
 
     // Input Polling
     updateCurrentInputState();
 
+    // Update State
     if (isPressedDown()) {
-        isDraggingGem = true;
-
-        console.log("Pressed Down", "pos:", getTouchOrMousePos())
+        updateDragStateOnPressDown();
     }
 
     if (isPressedUp()) {
-        isDraggingGem = false;
-
-        console.log("Pressed Up")
+        updateDragStateOnPressUp();
     }
 
     // Saves current input as previous input for next tick
     copyCurrentInputStateToPrevious();
+}
+
+function updateDragStateOnPressDown() {
+    const mousePos = getTouchOrMousePos();
+
+    const { gemPos, error } = gameToGemPos(mousePos);
+    if (error) return;
+
+    const gem = getGem(gemPos);
+
+    dragState.isActive = true;
+    dragState.initialGemType = gem;
+    dragState.currentGemPos = gemPos;
+
+    console.log("updateDragStateOnPressDown", "dragState:", dragState)
+}
+
+function updateDragStateOnPressUp() {
+    dragState.isActive = false;
+    console.log("updateDragStateOnPressUp", "dragState:", dragState)
 }
 
 function render() {
@@ -108,8 +134,8 @@ function render() {
         }
     }
 
-    if (isDraggingGem) {
-        drawGem("Fire", gemSizeUnit, getTouchOrMousePos());
+    if (dragState.isActive) {
+        drawGem(dragState.initialGemType, gemSizeUnit, getTouchOrMousePos());
     }
 }
 

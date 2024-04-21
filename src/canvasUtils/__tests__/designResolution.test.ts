@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { _gameToCanvasPos, _canvasToGamePos } from "../src/canvasUtils";
+import { _gameToCanvasPos, _canvasToGamePos } from "..";
 
 describe("design resolution tests", () => {
 
