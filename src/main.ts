@@ -16,11 +16,34 @@ type GemType =
     "Heart"
 
 // Game State
-const dragState = {
-    isActive: false,
-    initialGemType: "Fire" as GemType,
-    currentGemPos: { x: -1, y: -1 } as Vector2,
+class DragState {
+    public isActive: boolean = false;
+    public initialGemType: GemType = "Fire";
+    public previousGemPos: Vector2 = { x: -1, y: -1 };
+    public currentGemPos: Vector2 = { x: -1, y: -1 };
+
+    public initializeOnPressDown(gemType: GemType, gemPos: Vector2) {
+        dragState.isActive = true;
+        dragState.initialGemType = gemType;
+        dragState.currentGemPos = gemPos;
+        this.cloneCurrentGemPosToPrevious();
+    }
+
+    public deactivateOnPressUp() {
+        dragState.isActive = false;
+    }
+
+    public cloneCurrentGemPosToPrevious() {
+        this.previousGemPos.x = this.currentGemPos.x;
+        this.previousGemPos.y = this.currentGemPos.y;
+    }
+
+    public hasGamePosChanged() {
+        return this.currentGemPos.x != this.previousGemPos.x || this.currentGemPos.y != this.previousGemPos.y;
+    }
 }
+
+const dragState = new DragState();
 const gems: GemType[][] = [];
 
 // Main
@@ -77,7 +100,7 @@ function updateGameState() {
     // Input Polling
     updateCurrentInputState();
 
-    // Update State
+    // Update State from Input
     if (isPressedDown()) {
         updateDragStateOnPressDown();
     }
@@ -85,6 +108,9 @@ function updateGameState() {
     if (isPressedUp()) {
         updateDragStateOnPressUp();
     }
+
+    // Update State after Input
+    tryUpdateDragStateOnFixedUpdate();
 
     // Saves current input as previous input for next tick
     copyCurrentInputStateToPrevious();
@@ -97,17 +123,29 @@ function updateDragStateOnPressDown() {
     if (error) return;
 
     const gem = getGem(gemPos);
-
-    dragState.isActive = true;
-    dragState.initialGemType = gem;
-    dragState.currentGemPos = gemPos;
+    dragState.initializeOnPressDown(gem, gemPos);
 
     console.log("updateDragStateOnPressDown", "dragState:", dragState)
 }
 
 function updateDragStateOnPressUp() {
-    dragState.isActive = false;
+    dragState.deactivateOnPressUp();
     console.log("updateDragStateOnPressUp", "dragState:", dragState)
+}
+
+function tryUpdateDragStateOnFixedUpdate() {
+    if (!dragState.isActive) return;
+
+    const mousePos = getTouchOrMousePos();
+    const { gemPos, error } = gameToGemPos(mousePos);
+    if (error) return;
+
+    dragState.currentGemPos = gemPos;
+    if (dragState.hasGamePosChanged()) {
+        console.log("Changed!");
+    }
+
+    dragState.cloneCurrentGemPosToPrevious();
 }
 
 function render() {
