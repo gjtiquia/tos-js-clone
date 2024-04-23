@@ -47,9 +47,17 @@ const dragState = new DragState();
 
 class Gem {
     public gemType: GemType;
+    public isPlaceholder: boolean = false;
 
     constructor(gemType: GemType) {
         this.gemType = gemType;
+    }
+
+    public getOpacityHexCode() {
+        if (this.isPlaceholder)
+            return "1D" // ~15%
+
+        return "ff" // 256 in decimal
     }
 }
 const gems: Gem[][] = [];
@@ -110,11 +118,11 @@ function updateGameState() {
 
     // Update State from Input
     if (isPressedDown()) {
-        updateDragStateOnPressDown();
+        updateGameStateOnPressDown();
     }
 
     if (isPressedUp()) {
-        updateDragStateOnPressUp();
+        updateGameStateOnPressUp();
     }
 
     // Update State after Input
@@ -124,21 +132,23 @@ function updateGameState() {
     copyCurrentInputStateToPrevious();
 }
 
-function updateDragStateOnPressDown() {
+function updateGameStateOnPressDown() {
     const mousePos = getTouchOrMousePos();
 
     const { gemPos, error } = gameToGemPos(mousePos);
     if (error) return;
 
     const gem = getGem(gemPos);
-    dragState.initializeOnPressDown(gem, gemPos);
+    gem.isPlaceholder = true; // Makes it have less opacity
 
-    console.log("updateDragStateOnPressDown", "dragState:", dragState)
+    dragState.initializeOnPressDown(gem, gemPos);
 }
 
-function updateDragStateOnPressUp() {
+function updateGameStateOnPressUp() {
+    const currentGem = getGem(dragState.currentGemPos);
+    currentGem.isPlaceholder = false; // Reset opacity
+
     dragState.deactivateOnPressUp();
-    console.log("updateDragStateOnPressUp", "dragState:", dragState)
 }
 
 function tryUpdateDragStateOnFixedUpdate() {
@@ -156,15 +166,19 @@ function tryUpdateDragStateOnFixedUpdate() {
     dragState.cloneCurrentGemPosToPrevious();
 }
 
-function swapGem(gemPos1: Vector2, gemPos2: Vector2) {
-    const gem1 = getGem(gemPos1);
-    const gem2 = getGem(gemPos2);
+// TODO : Can probably be a static method in Gem class...?
+function swapGem(fromGemPos: Vector2, toGemPos: Vector2) {
+    const fromGem = getGem(fromGemPos);
+    const toGem = getGem(toGemPos);
 
-    const gem1OriginalType = gem1.gemType;
-    const gem2OriginalType = gem2.gemType;
+    const fromGemType = fromGem.gemType;
+    const toGemType = toGem.gemType;
 
-    gem2.gemType = gem1OriginalType;
-    gem1.gemType = gem2OriginalType;
+    fromGem.gemType = toGemType;
+    toGem.gemType = fromGemType;
+
+    fromGem.isPlaceholder = false;
+    toGem.isPlaceholder = true;
 }
 
 function render() {
@@ -187,7 +201,7 @@ function render() {
             const y = gemSizeUnit / 2 + j * gemSizeUnit;
             const pos = { x, y };
 
-            drawGem(gem.gemType, gemSizeUnit, pos)
+            drawGemWithOpacity(gem.gemType, gem.getOpacityHexCode(), gemSizeUnit, pos)
         }
     }
 
@@ -197,11 +211,14 @@ function render() {
 }
 
 function drawGem(gemType: GemType, sizeUnit: number, gamePos: Vector2) {
+    drawGemWithOpacity(gemType, "ff", sizeUnit, gamePos);
+}
 
+function drawGemWithOpacity(gemType: GemType, opacityHexCode: string, sizeUnit: number, gamePos: Vector2) {
     const ctx = getCtx();
 
     ctx.beginPath();
-    ctx.fillStyle = getColor(gemType);
+    ctx.fillStyle = getColor(gemType) + opacityHexCode;
 
     // Circle
     const padding = sizeUnit / 10;
