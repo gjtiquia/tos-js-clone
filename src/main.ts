@@ -22,9 +22,9 @@ class DragState {
     public previousGemPos: Vector2 = { x: -1, y: -1 };
     public currentGemPos: Vector2 = { x: -1, y: -1 };
 
-    public initializeOnPressDown(gemType: GemType, gemPos: Vector2) {
+    public initializeOnPressDown(gem: Gem, gemPos: Vector2) {
         dragState.isActive = true;
-        dragState.initialGemType = gemType;
+        dragState.initialGemType = gem.gemType;
         dragState.currentGemPos = gemPos;
         this.cloneCurrentGemPosToPrevious();
     }
@@ -44,7 +44,15 @@ class DragState {
 }
 
 const dragState = new DragState();
-const gems: GemType[][] = [];
+
+class Gem {
+    public gemType: GemType;
+
+    constructor(gemType: GemType) {
+        this.gemType = gemType;
+    }
+}
+const gems: Gem[][] = [];
 
 // Main
 main();
@@ -84,11 +92,11 @@ async function main() {
 }
 
 function initializeGameState() {
-    gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
-    gems.push(["Grass", "Water", "Light", "Dark", "Heart", "Fire"]);
-    gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
-    gems.push(["Grass", "Water", "Light", "Dark", "Heart", "Fire"]);
-    gems.push(["Fire", "Grass", "Water", "Light", "Dark", "Heart"]);
+    gems.push([new Gem("Fire"), new Gem("Grass"), new Gem("Water"), new Gem("Light"), new Gem("Dark"), new Gem("Heart")]);
+    gems.push([new Gem("Grass"), new Gem("Water"), new Gem("Light"), new Gem("Dark"), new Gem("Heart"), new Gem("Fire")]);
+    gems.push([new Gem("Fire"), new Gem("Grass"), new Gem("Water"), new Gem("Light"), new Gem("Dark"), new Gem("Heart")]);
+    gems.push([new Gem("Grass"), new Gem("Water"), new Gem("Light"), new Gem("Dark"), new Gem("Heart"), new Gem("Fire")]);
+    gems.push([new Gem("Fire"), new Gem("Grass"), new Gem("Water"), new Gem("Light"), new Gem("Dark"), new Gem("Heart")]);
 }
 
 function getGem(gemPos: Vector2) {
@@ -142,10 +150,21 @@ function tryUpdateDragStateOnFixedUpdate() {
 
     dragState.currentGemPos = gemPos;
     if (dragState.hasGamePosChanged()) {
-        console.log("Changed!");
+        swapGem(dragState.previousGemPos, dragState.currentGemPos);
     }
 
     dragState.cloneCurrentGemPosToPrevious();
+}
+
+function swapGem(gemPos1: Vector2, gemPos2: Vector2) {
+    const gem1 = getGem(gemPos1);
+    const gem2 = getGem(gemPos2);
+
+    const gem1OriginalType = gem1.gemType;
+    const gem2OriginalType = gem2.gemType;
+
+    gem2.gemType = gem1OriginalType;
+    gem1.gemType = gem2OriginalType;
 }
 
 function render() {
@@ -162,13 +181,13 @@ function render() {
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 5; j++) {
 
-            const gemType = gems[j][i];
+            const gem = gems[j][i];
 
             const x = gemSizeUnit / 2 + i * gemSizeUnit;
             const y = gemSizeUnit / 2 + j * gemSizeUnit;
             const pos = { x, y };
 
-            drawGem(gemType, gemSizeUnit, pos)
+            drawGem(gem.gemType, gemSizeUnit, pos)
         }
     }
 
